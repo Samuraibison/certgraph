@@ -1,0 +1,8 @@
+# Environment files
+.vscode
+__pycache__
+
+# Dot output
+*.dot
+*.png
+*.svg
