@@ -1,6 +1,7 @@
 from cryptography import x509
 from cryptography.hazmat.primitives import hashes
 import networkx as nx
+from rapidfuzz import fuzz
 
 
 class certgraph:
@@ -89,3 +90,20 @@ class certgraph:
         self._certlist.clear()
         self._graph.clear()
         return self
+
+    def fingerprint_from_distinguished_name(self, dn: str, cutoff: int = 0) -> str:
+        # Evaluate the nodes
+        nodes: list[tuple[str, dict]] = list(self._graph.nodes(data=True))
+
+        # Sort using a fuzzy-search
+        ranked = sorted(
+            nodes,
+            key=lambda t: fuzz.ratio(
+                dn, t[1]["certificate"].subject.rfc4514_string(), score_cutoff=cutoff
+            )
+        )
+
+        if not ranked:
+            return None
+
+        return ranked[-1][0]
