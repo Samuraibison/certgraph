@@ -5,7 +5,10 @@ from rapidfuzz import fuzz
 
 
 class certgraph:
+    """Class for creating and exploring directed graphs of X509 certificates."""
+
     def __init__(self) -> None:
+        """Initialise an empty certgraph object."""
         self._certlist: set[x509.Certificate] = []
         self._graph = nx.DiGraph()
 
@@ -14,8 +17,18 @@ class certgraph:
         certificates: (
             x509.Certificate | str | bytes | list[x509.Certificate | str | bytes]
         ),
-        pem_encoding: str = "utf-8",
     ) -> certgraph:
+        """
+        Import one or more certificates and regenerate the certificate digraph.
+        Args:
+            certificates: Certificates to import, either individual or a list. x509.Certificate objects are directly imported, str is assumed to be PEM encoded, bytes are assumed to be DER encoded.
+
+        Returns:
+            Returns self to allow method chaining.
+
+        Raises:
+            TypeError: Certificate type is not supported (i.e. not x509.Certificate, str or bytes)
+        """
         new_certs: set[x509.Certificate] = []
 
         # If there's only a non-list object being handing in, turn it into an array to keep the same iteration code
@@ -27,7 +40,7 @@ class certgraph:
                 new_certs.append(cert)
             elif isinstance(cert, str):
                 # PEM encoded
-                pem_certs = x509.load_pem_x509_certificates(cert.encode(pem_encoding))
+                pem_certs = x509.load_pem_x509_certificates(cert.encode("utf-8"))
                 new_certs.extend(pem_certs)
             elif isinstance(cert, bytes):
                 # DER encoded
@@ -44,6 +57,7 @@ class certgraph:
         return self
 
     def _generate_graph(self, certificates: set[x509.Certificate]) -> nx.DiGraph:
+        """Generate a networkx digraph from the provided list of certificates."""
         G = nx.DiGraph()
 
         # Pass 1: add nodes and build a subject_dn -> fingerprint index
@@ -65,9 +79,14 @@ class certgraph:
         return G
 
     def report_fingerprint_edges(self) -> list[str]:
+        """
+        Get the list of all edges in the form 'fingerprint1 -> fingerprint2'. Only contains the first 8 characters of each fingerprint, because this is mostly for debugging from a terminal without having to generate a complete graph image.
+        Returns: List of all edges in the current certificate digraph in terms of fingerprints.
+        """
         return [f"{edge[0][:8]} -> {edge[1][:8]}" for edge in self._graph.edges()]
 
     def export_dot(self, format: str = "svg") -> str:
+        """Function to export the current certificate digraph in the dot language. NOTE: Still in progress."""
         allowed_types = ["svg", "png"]
 
         if format not in allowed_types:
@@ -87,11 +106,27 @@ class certgraph:
         return "dot"
 
     def clear(self) -> certgraph:
+        """
+        Remove all certificates imported and clear the digraph.
+        Returns: Returns self to allow method chaining.
+        """
         self._certlist.clear()
         self._graph.clear()
         return self
 
     def fingerprint_from_distinguished_name(self, dn: str, cutoff: int = 0) -> str:
+        """
+        Get the fingerprint of the imported certificate with the best fuzzy-search match between the requested distinguised name and the rfc4514 string of each imported certificate.
+        Args:
+            dn: The distinguished name to use as the basis for the fuzzy-search.
+            cutoff: Cutoff value for matching, from 0-100. 0 will always return the closest match (even if poor), 100 will only ever return an exact match.
+
+        Returns:
+            The fingerprint of the certificate with the closes matching distinguished name to the one requested. Can also return None if there are no certificates above the cutoff threshold.
+        """
+        if (cutoff < 0) or (cutoff > 100):
+            raise ValueError("cutoff must be between 0-100")
+
         # Evaluate the nodes
         nodes: list[tuple[str, dict]] = list(self._graph.nodes(data=True))
 
@@ -100,7 +135,7 @@ class certgraph:
             nodes,
             key=lambda t: fuzz.ratio(
                 dn, t[1]["certificate"].subject.rfc4514_string(), score_cutoff=cutoff
-            )
+            ),
         )
 
         if not ranked:
