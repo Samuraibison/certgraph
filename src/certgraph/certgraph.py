@@ -157,10 +157,45 @@ class certgraph:
             fingerprint: Fingerprint of the certificate to get. Use fingerprint_from_distinguished_name() to resolve the fingerprint from a DN.
 
         Returns:
-            x509 certificate that matches the provided fingerprint or None if it doesn't exist.
-
+            Certificate that matches the provided fingerprint or None if it doesn't exist.
         """
         if fingerprint not in self._graph.nodes:
             return None
 
-        return self._graph.nodes()[fingerprint]["certificate"]
+        return self._graph.nodes[fingerprint]["certificate"]
+
+    def get_issuer_fingerprint(self, fingerprint: str) -> str:
+        """
+        Get the fingerprint of the issuer certificate.
+
+        Args:
+            fingerprint: Fingerprint of the certificate to get the issuer of.
+        
+        Returns:
+            The fingerprint of the issuing certificate or None if not present in the digraph.
+
+        Raises:
+            ValueError: If certificate with the supplied fingerprint isn't in the digraph.
+        """
+        if fingerprint not in self._graph.nodes:
+            raise ValueError(f"Fingerprint supplied doesn't match any imported certificate.")
+
+        return next(self._graph.predecessors(fingerprint), None)
+
+    def get_child_fingerprints(self, fingerprint: str) -> str:
+        """
+        Get the fingerprints of any certificates issued by the certificate with the provided fingerprint.
+
+        Args:
+            fingerprint: Fingerprint of the certificate to get the child certificates of.
+        
+        Returns:
+            The list of fingerprints belonging to child certificates.
+
+        Raises:
+            ValueError: If certificate with the supplied fingerprint isn't in the digraph.
+        """
+        if fingerprint not in self._graph.nodes:
+            raise ValueError(f"Fingerprint supplied doesn't match any imported certificate.")
+
+        return list(self._graph.successors(fingerprint))
