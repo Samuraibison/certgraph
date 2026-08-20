@@ -20,6 +20,7 @@ class certgraph:
     ) -> certgraph:
         """
         Import one or more certificates and regenerate the certificate digraph.
+
         Args:
             certificates: Certificates to import, either individual or a list. x509.Certificate objects are directly imported, str is assumed to be PEM encoded, bytes are assumed to be DER encoded.
 
@@ -81,7 +82,9 @@ class certgraph:
     def report_fingerprint_edges(self) -> list[str]:
         """
         Get the list of all edges in the form 'fingerprint1 -> fingerprint2'. Only contains the first 8 characters of each fingerprint, because this is mostly for debugging from a terminal without having to generate a complete graph image.
-        Returns: List of all edges in the current certificate digraph in terms of fingerprints.
+
+        Returns:
+            List of all edges in the current certificate digraph in terms of fingerprints.
         """
         return [f"{edge[0][:8]} -> {edge[1][:8]}" for edge in self._graph.edges()]
 
@@ -108,7 +111,9 @@ class certgraph:
     def clear(self) -> certgraph:
         """
         Remove all certificates imported and clear the digraph.
-        Returns: Returns self to allow method chaining.
+
+        Returns:
+            Returns self to allow method chaining.
         """
         self._certlist.clear()
         self._graph.clear()
@@ -117,6 +122,7 @@ class certgraph:
     def fingerprint_from_distinguished_name(self, dn: str, cutoff: int = 0) -> str:
         """
         Get the fingerprint of the imported certificate with the best fuzzy-search match between the requested distinguised name and the rfc4514 string of each imported certificate.
+
         Args:
             dn: The distinguished name to use as the basis for the fuzzy-search.
             cutoff: Cutoff value for matching, from 0-100. 0 will always return the closest match (even if poor), 100 will only ever return an exact match.
@@ -142,3 +148,19 @@ class certgraph:
             return None
 
         return ranked[-1][0]
+
+    def get_certificate(self, fingerprint: str) -> x509.Certificate | None:
+        """
+        Get an imported ceritficate based on the fingerprint.
+
+        Args:
+            fingerprint: Fingerprint of the certificate to get. Use fingerprint_from_distinguished_name() to resolve the fingerprint from a DN.
+
+        Returns:
+            x509 certificate that matches the provided fingerprint or None if it doesn't exist.
+
+        """
+        if fingerprint not in self._graph.nodes:
+            return None
+
+        return self._graph.nodes()[fingerprint]["certificate"]
