@@ -36,6 +36,23 @@ def test_export_dot_node_shape_is_box(graph, self_signed_cert):
     assert "shape=box" in dot
 
 
+def test_export_dot_highlights_expired_certificate(graph, expired_cert):
+    graph.import_certificates(expired_cert)
+
+    dot = graph.export_dot()
+
+    assert "fillcolor=tomato" in dot
+
+
+def test_export_dot_does_not_highlight_valid_certificate(graph, self_signed_cert):
+    graph.import_certificates(self_signed_cert)
+
+    dot = graph.export_dot()
+
+    assert "fillcolor=white" in dot
+    assert "tomato" not in dot
+
+
 def test_export_dot_includes_edges(graph, chain_certs):
     graph.import_certificates(chain_certs)
 
