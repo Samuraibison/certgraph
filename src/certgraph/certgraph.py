@@ -1,5 +1,6 @@
 from cryptography import x509
 from cryptography.hazmat.primitives import hashes
+from datetime import datetime, timezone
 import networkx as nx
 from rapidfuzz import fuzz
 
@@ -100,11 +101,22 @@ class certgraph:
         for fingerprint, data in self._graph.nodes(data=True):
             cert: x509.Certificate = data["certificate"]
             validity_time_str = f"{cert.not_valid_before_utc.isoformat()} → {cert.not_valid_after_utc.isoformat()}"
+            invalid = self.certificate_invalid_at(fingerprint)
 
             label = f"DN: {cert.subject.rfc4514_string()}"
             label += f"\nValid: {validity_time_str}"
 
-            dot_graph.add_node(fingerprint, label=label, shape="box")
+            if invalid:
+                node_color = "tomato"
+            else:
+                node_color = "white"
+
+            dot_graph.add_node(
+                fingerprint,
+                label=label,
+                shape="box",
+                style="filled",
+                fillcolor=node_color)
 
         dot_graph.add_edges_from(self._graph.edges())
 
@@ -217,3 +229,22 @@ class certgraph:
             if cert in self._certlist:
                 self._certlist.remove(cert)
 
+    def certificate_invalid_at(self, fingerprint: str, at_time: datetime = datetime.now(timezone.utc)) -> bool:
+        """
+        Check if an imported certificate is outside its validity period - either not yet valid or expired.
+
+        Args:
+            fingerprint: Fingerprint of the certificate to check.
+            at_time: When the certificate validity will be checked against. Defaults to now (UTC).
+
+        Returns:
+            True if the certificate is not yet valid or expired at the given time, otherwise false.
+
+        Raises:
+            ValueError: If certificate with the supplied fingerprint isn't in the digraph.
+        """
+        if fingerprint not in self._graph.nodes:
+            raise ValueError(f"Fingerprint supplied doesn't match any imported certificate.")
+
+        cert = self.get_certificate(fingerprint)
+        return at_time < cert.not_valid_before_utc or at_time > cert.not_valid_after_utc
