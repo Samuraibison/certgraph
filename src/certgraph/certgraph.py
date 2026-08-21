@@ -199,3 +199,19 @@ class certgraph:
             raise ValueError(f"Fingerprint supplied doesn't match any imported certificate.")
 
         return list(self._graph.successors(fingerprint))
+
+    def remove_certificate(self, fingerprint: str) -> None:
+        """
+        Remove an imported ceritficate based on the fingerprint and update the certificate digraph.
+
+        Args:
+            fingerprint: Fingerprint of the certificate to remove. Use fingerprint_from_distinguished_name() to resolve the fingerprint from a DN.
+        """
+        if fingerprint in self._graph.nodes:
+            cert = self._graph.nodes[fingerprint]["certificate"]
+
+            self._graph.remove_node(fingerprint)
+
+            if cert in self._certlist:
+                self._certlist.remove(cert)
+
