@@ -5,7 +5,7 @@ from rapidfuzz import fuzz
 
 
 class certgraph:
-    """Class for creating and exploring directed graphs of X509 certificates."""
+    """Class for creating and exploring directed graphs of X.509 certificates."""
 
     def __init__(self) -> None:
         """Initialise an empty certgraph object."""
@@ -88,25 +88,27 @@ class certgraph:
         """
         return [f"{edge[0][:8]} -> {edge[1][:8]}" for edge in self._graph.edges()]
 
-    def export_dot(self, format: str = "svg") -> str:
-        """Function to export the current certificate digraph in the dot language. NOTE: Still in progress."""
-        allowed_types = ["svg", "png"]
+    def export_dot(self) -> str:
+        """
+        Export the current certificate digraph in the dot language.
 
-        if format not in allowed_types:
-            raise ValueError(
-                f"Cannot export dot graph of type {format} - must be one of {allowed_types}"
-            )
-
+        Returns:
+            The certificate digraph rendered as a dot language string.
+        """
         dot_graph = nx.DiGraph()
 
         for fingerprint, data in self._graph.nodes(data=True):
-            label = data["certificate"].subject.rfc4514_string()
-            dot_graph.add_node(fingerprint, label=label)
+            cert: x509.Certificate = data["certificate"]
+            validity_time_str = f"{cert.not_valid_before_utc.isoformat()} → {cert.not_valid_after_utc.isoformat()}"
+
+            label = f"DN: {cert.subject.rfc4514_string()}"
+            label += f"\nValid: {validity_time_str}"
+
+            dot_graph.add_node(fingerprint, label=label, shape="box")
+
         dot_graph.add_edges_from(self._graph.edges())
 
-        nx.drawing.nx_pydot.write_dot(dot_graph, "./test_out.dot")
-
-        return "dot"
+        return nx.drawing.nx_pydot.to_pydot(dot_graph).to_string()
 
     def clear(self) -> certgraph:
         """
