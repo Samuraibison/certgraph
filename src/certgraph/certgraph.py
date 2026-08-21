@@ -116,7 +116,8 @@ class certgraph:
                 label=label,
                 shape="box",
                 style="filled",
-                fillcolor=node_color)
+                fillcolor=node_color,
+            )
 
         dot_graph.add_edges_from(self._graph.edges())
 
@@ -184,7 +185,7 @@ class certgraph:
 
         Args:
             fingerprint: Fingerprint of the certificate to get the issuer of.
-        
+
         Returns:
             The fingerprint of the issuing certificate or None if not present in the digraph.
 
@@ -192,7 +193,9 @@ class certgraph:
             ValueError: If certificate with the supplied fingerprint isn't in the digraph.
         """
         if fingerprint not in self._graph.nodes:
-            raise ValueError(f"Fingerprint supplied doesn't match any imported certificate.")
+            raise ValueError(
+                f"Fingerprint supplied doesn't match any imported certificate."
+            )
 
         return next(self._graph.predecessors(fingerprint), None)
 
@@ -202,7 +205,7 @@ class certgraph:
 
         Args:
             fingerprint: Fingerprint of the certificate to get the child certificates of.
-        
+
         Returns:
             The list of fingerprints belonging to child certificates.
 
@@ -210,7 +213,9 @@ class certgraph:
             ValueError: If certificate with the supplied fingerprint isn't in the digraph.
         """
         if fingerprint not in self._graph.nodes:
-            raise ValueError(f"Fingerprint supplied doesn't match any imported certificate.")
+            raise ValueError(
+                f"Fingerprint supplied doesn't match any imported certificate."
+            )
 
         return list(self._graph.successors(fingerprint))
 
@@ -229,7 +234,9 @@ class certgraph:
             if cert in self._certlist:
                 self._certlist.remove(cert)
 
-    def certificate_invalid_at(self, fingerprint: str, at_time: datetime = datetime.now(timezone.utc)) -> bool:
+    def certificate_invalid_at(
+        self, fingerprint: str, at_time: datetime = datetime.now(timezone.utc)
+    ) -> bool:
         """
         Check if an imported certificate is outside its validity period - either not yet valid or expired.
 
@@ -244,7 +251,9 @@ class certgraph:
             ValueError: If certificate with the supplied fingerprint isn't in the digraph.
         """
         if fingerprint not in self._graph.nodes:
-            raise ValueError(f"Fingerprint supplied doesn't match any imported certificate.")
+            raise ValueError(
+                f"Fingerprint supplied doesn't match any imported certificate."
+            )
 
         cert = self.get_certificate(fingerprint)
         return at_time < cert.not_valid_before_utc or at_time > cert.not_valid_after_utc
