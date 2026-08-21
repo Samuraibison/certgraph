@@ -76,5 +76,21 @@ def self_signed_cert(make_chain):
 
 
 @pytest.fixture
+def expired_cert():
+    key = ec.generate_private_key(ec.SECP256R1())
+    subject = x509.Name([x509.NameAttribute(NameOID.COMMON_NAME, "expired-leaf")])
+    return (
+        x509.CertificateBuilder()
+        .subject_name(subject)
+        .issuer_name(subject)
+        .public_key(key.public_key())
+        .serial_number(x509.random_serial_number())
+        .not_valid_before(datetime.today() - timedelta(days=30))
+        .not_valid_after(datetime.today() - timedelta(days=1))
+        .sign(private_key=key, algorithm=hashes.SHA256())
+    )
+
+
+@pytest.fixture
 def graph():
     return CertGraph()
