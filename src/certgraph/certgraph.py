@@ -13,6 +13,10 @@ class certgraph:
         self._certlist: set[x509.Certificate] = []
         self._graph = nx.DiGraph()
 
+    def __len__(self) -> int:
+        """Get number of certificates imported."""
+        return len(self._certlist)
+
     def import_certificates(
         self,
         certificates: (
