@@ -31,6 +31,11 @@ docs = [
     "sphinx-rtd-theme",
 ]
 
+[project.urls]
+Documentation = "https://certgraph.readthedocs.io"
+Repository = "https://github.com/Samuraibison/certgraph"
+Issues = "https://github.com/Samuraibison/certgraph/issues"
+
 [tool.setuptools.packages.find]
 where = ["src"]
 

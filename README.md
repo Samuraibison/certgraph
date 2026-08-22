@@ -1,6 +1,7 @@
 # certgraph
 
 [![PyPI version](https://img.shields.io/pypi/v/certgraph)](https://pypi.org/project/certgraph/)
+[![Documentation Status](https://readthedocs.org/projects/certgraph/badge/?version=latest)](https://certgraph.readthedocs.io/en/latest/?badge=latest)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 
 Python package for creating, exploring and displaying directed graphs of X.509 certificates.
@@ -125,6 +126,8 @@ Export graph to DOT language and write to a file, where it can be rendered with 
 See more complex examples in the `examples` directory of the repository (**WIP**).
 
 ## Documentation
+
+Hosted documentation is available at [certgraph.readthedocs.io](https://certgraph.readthedocs.io).
 
 Documentation for the package uses Sphinx with the read-the-docs template. Source can be found in `docs`.
 
