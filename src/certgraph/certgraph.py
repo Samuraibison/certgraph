@@ -267,14 +267,14 @@ class certgraph:
                 self._certlist.remove(cert)
 
     def certificate_invalid_at(
-        self, fingerprint: str, at_time: datetime = datetime.now(timezone.utc)
+        self, fingerprint: str, at_time: datetime | None = None
     ) -> bool:
         """
         Check if an imported certificate is outside its validity period - either not yet valid or expired.
 
         Args:
             fingerprint: Fingerprint of the certificate to check.
-            at_time: When the certificate validity will be checked against. Defaults to now (UTC).
+            at_time: When the certificate validity will be checked against. None value defaults to now (UTC).
 
         Returns:
             True if the certificate is not yet valid or expired at the given time, otherwise false.
@@ -286,6 +286,9 @@ class certgraph:
             raise ValueError(
                 f"Fingerprint supplied doesn't match any imported certificate."
             )
+
+        if at_time is None:
+            at_time = datetime.now(timezone.utc)
 
         cert = self.get_certificate(fingerprint)
         return at_time < cert.not_valid_before_utc or at_time > cert.not_valid_after_utc
