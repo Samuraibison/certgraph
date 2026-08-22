@@ -126,4 +126,10 @@ See more complex examples in the `examples` directory of the repository (**WIP**
 
 ## Documentation
 
-**WIP**
+Documentation for the package uses Sphinx with the read-the-docs template. Source can be found in `docs`.
+
+To build the source, execute the following from the repo root:
+
+```bash
+python -m sphinx -b html docs/source docs/build
+```

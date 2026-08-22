@@ -6,3 +6,9 @@ __pycache__
 *.dot
 *.png
 *.svg
+
+# Sphinx build output
+docs/build
+
+# Docs assets exempted from the *.svg ignore above
+!docs/source/_static/basic_example.svg
