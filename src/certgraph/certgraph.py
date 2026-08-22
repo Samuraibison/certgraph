@@ -2,6 +2,7 @@ from cryptography import x509
 from cryptography.hazmat.primitives import hashes
 from datetime import datetime, timezone
 import networkx as nx
+import pydot
 from rapidfuzz import fuzz
 
 
@@ -93,9 +94,30 @@ class certgraph:
         """
         return [f"{edge[0][:8]} -> {edge[1][:8]}" for edge in self._graph.edges()]
 
-    def export_dot(self) -> str:
+    def _generate_dot_legend(self) -> pydot.Cluster:
+        """Generate the optional legend for the dot output."""
+        cluster = pydot.Cluster("legend", label="Legend", style="dashed")
+
+        nodes = [
+            pydot.Node("legend_valid", label="Valid", shape="box", style="filled", fillcolor="white"),
+            pydot.Node("legend_invalid", label="Invalid", shape="box", style="filled", fillcolor="tomato")
+        ]
+
+        for i, n in enumerate(nodes):
+            cluster.add_node(n)
+
+            # Add invisible edge to force the nodes to appear on different ranks (i.e. top-bottom direction)
+            if i != len(nodes) - 1:
+                cluster.add_edge(pydot.Edge(nodes[i], nodes[i + 1], style="invis"))
+
+        return cluster
+
+    def export_dot(self, add_legend: bool=True) -> str:
         """
         Export the current certificate digraph in the dot language.
+
+        Args:
+            add_legend: Add a legend with the node colours to the graph output. Default is True.
 
         Returns:
             The certificate digraph rendered as a dot language string.
@@ -124,8 +146,12 @@ class certgraph:
             )
 
         dot_graph.add_edges_from(self._graph.edges())
+        dot_out = nx.drawing.nx_pydot.to_pydot(dot_graph)
 
-        return nx.drawing.nx_pydot.to_pydot(dot_graph).to_string()
+        if add_legend:
+            dot_out.add_subgraph(self._generate_dot_legend())
+
+        return dot_out.to_string()
 
     def clear(self) -> certgraph:
         """
