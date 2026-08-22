@@ -101,8 +101,20 @@ class certgraph:
         cluster = pydot.Cluster("legend", label="Legend", style="dashed")
 
         nodes = [
-            pydot.Node("legend_valid", label="Valid", shape="box", style="filled", fillcolor="white"),
-            pydot.Node("legend_invalid", label="Invalid", shape="box", style="filled", fillcolor="tomato")
+            pydot.Node(
+                "legend_valid",
+                label="Valid",
+                shape="box",
+                style="filled",
+                fillcolor="white",
+            ),
+            pydot.Node(
+                "legend_invalid",
+                label="Invalid",
+                shape="box",
+                style="filled",
+                fillcolor="tomato",
+            ),
         ]
 
         for i, n in enumerate(nodes):
@@ -114,7 +126,7 @@ class certgraph:
 
         return cluster
 
-    def export_dot(self, add_legend: bool=True) -> str:
+    def export_dot(self, add_legend: bool = True) -> str:
         """
         Export the current certificate digraph in the dot language.
 

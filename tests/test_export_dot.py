@@ -77,8 +77,11 @@ def test_export_dot_includes_legend_by_default(graph):
 
     assert "subgraph cluster_legend" in dot
     assert "label=Legend" in dot
-    assert 'legend_valid [label=Valid, shape=box, style=filled, fillcolor=white]' in dot
-    assert 'legend_invalid [label=Invalid, shape=box, style=filled, fillcolor=tomato]' in dot
+    assert "legend_valid [label=Valid, shape=box, style=filled, fillcolor=white]" in dot
+    assert (
+        "legend_invalid [label=Invalid, shape=box, style=filled, fillcolor=tomato]"
+        in dot
+    )
 
 
 def test_export_dot_legend_can_be_disabled(graph):
